@@ -45,6 +45,8 @@ data/raw_audio/
 data/processed_audio/
 data/annotations/private/
 data/demo_samples/private/
+# Externally supplied datasets and reference repositories
+舍友data/
 *.wav
 *.mp3
 *.m4a
