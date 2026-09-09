@@ -1,0 +1,364 @@
+:root {
+  color: #17221d;
+  background: #f3f0e8;
+  font-family:
+    Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system,
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 10% 50%, rgba(220, 168, 96, 0.1), transparent 28%),
+    #f3f0e8;
+}
+
+button {
+  font: inherit;
+}
+
+.hero {
+  min-height: 540px;
+  color: #f8f5ec;
+  background:
+    linear-gradient(110deg, rgba(12, 40, 31, 0.97), rgba(21, 63, 48, 0.88)),
+    radial-gradient(circle at 80% 10%, #496d5c, #102f25);
+  overflow: hidden;
+  position: relative;
+}
+
+.hero::after {
+  position: absolute;
+  right: -120px;
+  bottom: -200px;
+  width: 520px;
+  height: 520px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 80px rgba(255, 255, 255, 0.03),
+    0 0 0 160px rgba(255, 255, 255, 0.02);
+  content: "";
+}
+
+.nav-shell,
+.hero-content,
+.content-shell {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.nav-shell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0;
+}
+
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 12px;
+  color: #f4c77f;
+}
+
+.stage-badge {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+
+.hero-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
+  gap: 72px;
+  align-items: center;
+  padding: 76px 0 100px;
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  margin: 0 0 18px;
+  color: #f4c77f;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.eyebrow.dark {
+  color: #95703b;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(44px, 6.5vw, 78px);
+  font-weight: 650;
+  letter-spacing: -0.05em;
+  line-height: 1.08;
+}
+
+h1 span {
+  color: #f4c77f;
+}
+
+.hero-copy {
+  max-width: 620px;
+  margin: 30px 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.status-card {
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.status-label {
+  margin: 0 0 24px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 13px;
+}
+
+.status-card ol {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-card li {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  font-size: 15px;
+}
+
+.status-card li span {
+  color: #f4c77f;
+  font-family: Georgia, serif;
+}
+
+.status-note {
+  margin: 26px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: #b8d8c8;
+  font-size: 13px;
+}
+
+.content-shell {
+  padding: 82px 0 100px;
+}
+
+.section-heading {
+  display: flex;
+  gap: 32px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 48px);
+  letter-spacing: -0.04em;
+}
+
+.section-heading > p {
+  max-width: 420px;
+  margin: 0;
+  color: #66716b;
+  line-height: 1.7;
+}
+
+.role-tabs,
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-top: 34px;
+  overflow-x: auto;
+}
+
+.role-tabs button,
+.filters button {
+  border: 1px solid #d6d1c5;
+  border-radius: 999px;
+  background: transparent;
+  color: #53605a;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.role-tabs button {
+  padding: 12px 18px;
+  font-weight: 700;
+}
+
+.role-tabs button span {
+  margin-left: 8px;
+  color: #8a938e;
+  font-size: 12px;
+}
+
+.filters {
+  margin-top: 18px;
+}
+
+.filters button {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.role-tabs button.active,
+.filters button.active {
+  border-color: #173f31;
+  background: #173f31;
+  color: #fff;
+}
+
+.question-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 34px;
+}
+
+.question-card {
+  display: flex;
+  min-height: 340px;
+  flex-direction: column;
+  padding: 24px;
+  border: 1px solid #ddd8cc;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: 0 16px 40px rgba(29, 44, 36, 0.04);
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #78817c;
+  font-size: 12px;
+}
+
+.question-number {
+  margin: 30px 0 12px;
+  color: #b38a50;
+  font-family: Georgia, serif;
+  font-size: 16px;
+}
+
+.question-card h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.point-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 22px 0;
+}
+
+.point-list span {
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: #ece8de;
+  color: #5c665f;
+  font-size: 12px;
+}
+
+.start-button {
+  margin-top: auto;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #d7d5cf;
+  color: #787b79;
+  cursor: not-allowed;
+}
+
+.state-panel {
+  margin-top: 34px;
+  padding: 32px;
+  border: 1px solid #d9d4c8;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.6);
+  color: #53605a;
+}
+
+.state-panel.error {
+  display: grid;
+  gap: 8px;
+  border-color: #ddb7aa;
+  color: #923e2e;
+}
+
+@media (max-width: 900px) {
+  .hero-content {
+    grid-template-columns: 1fr;
+  }
+
+  .question-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .nav-shell,
+  .hero-content,
+  .content-shell {
+    width: min(100% - 28px, 1180px);
+  }
+
+  .hero-content {
+    padding-top: 54px;
+  }
+
+  .section-heading {
+    display: block;
+  }
+
+  .section-heading > p {
+    margin-top: 18px;
+  }
+
+  .question-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stage-badge {
+    display: none;
+  }
+}
+

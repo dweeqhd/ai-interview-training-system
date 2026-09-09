@@ -14,6 +14,9 @@ __pycache__/
 .venv/
 venv/
 
+# Project-local development tools
+.tools/
+
 # Node
 node_modules/
 dist/
@@ -46,4 +49,3 @@ data/demo_samples/private/
 *.m4a
 *.webm
 *.flac
-
