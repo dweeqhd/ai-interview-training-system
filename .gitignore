@@ -33,6 +33,7 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 logs/
+runtime/
 uploads/
 
 # Models

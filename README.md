@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-阶段 2 已完成：项目已有可运行的 Vue 3 前端和 FastAPI 后端，可浏览软件开发岗及 15 道题库草案。录音、语音转写和表达分析将在阶段 3 接入。
+阶段 3 已完成：除了岗位与题库浏览，网页现在可录音或上传音频，并在本机完成格式标准化、中文转写、语速、停顿和语气词分析。训练会话、回答和任务状态保存在本地 SQLite 中。
 
 详细状态请先阅读：[代码现状分析.md](代码现状分析.md)。
 
@@ -38,7 +38,25 @@
 - 项目专用 Python 3.12 位于 `.tools/python312`；
 - Python 依赖安装在项目专用 `.venv`；
 - Node.js 与 npm 位于项目专用 `.tools`；
-- `.tools`、`.venv` 和 `frontend/node_modules` 均不提交到 Git。
+- FFmpeg 9.0.1 位于项目专用 `.tools`，不修改系统 PATH；
+- PyTorch/torchaudio 2.11.0 CPU、FunASR 1.4.15 和 ModelScope 1.40.0 安装在 `.venv`；
+- Paraformer、FSMN-VAD 和 CT-Punc 模型位于项目 `models`，约 2.04GB；
+- `.tools`、`.venv`、`frontend/node_modules`、`models`、`runtime`、`uploads` 和私有音频目录均不提交到 Git。
+
+检查阶段 3 环境：
+
+```powershell
+.\scripts\check-stage3-environment.ps1
+```
+
+在一台新电脑复现语音环境时，必须先取得项目负责人同意，再运行：
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r .\backend\requirements-speech.txt
+.\scripts\download-models.ps1
+```
+
+模型与指标的详细依据见：[阶段 3 语音处理与指标说明](docs/03-语音处理与指标说明.md)。
 
 ## MVP 范围
 
