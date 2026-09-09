@@ -47,6 +47,9 @@ data/annotations/private/
 data/demo_samples/private/
 # Externally supplied datasets and reference repositories
 舍友data/
+# Filled copies returned by annotators
+outputs/annotation-kit-*/AI面试数据标注表_L*.xlsx
+outputs/annotation-kit-*/已填写/
 *.wav
 *.mp3
 *.m4a
