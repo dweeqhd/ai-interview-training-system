@@ -1,6 +1,9 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue"
 
+import HistoryPanel from "./components/HistoryPanel.vue"
+import ReportPanel from "./components/ReportPanel.vue"
+
 const roles = ref([])
 const questions = ref([])
 const selectedRoleId = ref("")
@@ -18,6 +21,11 @@ const audioUrl = ref("")
 const recordingSeconds = ref(0)
 const currentSessionId = ref("")
 const currentAnswer = ref(null)
+const pageMode = ref("practice")
+const historyItems = ref([])
+const historyLoading = ref(false)
+const historyError = ref("")
+const currentTrend = ref([])
 let recordingTimer = null
 let pollTimer = null
 let recordingStartedAt = 0
@@ -67,6 +75,7 @@ async function initialize() {
     roles.value = await response.json()
     if (roles.value.length > 0) {
       await loadQuestions(roles.value[0].id)
+      await loadHistory()
     } else {
       loading.value = false
     }
@@ -123,6 +132,8 @@ async function openPractice(question) {
   abortRecording()
   clearRecording()
   selectedQuestion.value = question
+  pageMode.value = "practice"
+  await loadTrend(question.id)
   await nextTick()
   document.querySelector(".recorder-shell")?.scrollIntoView({
     behavior: "smooth",
@@ -135,6 +146,84 @@ function closePractice() {
   abortRecording()
   clearRecording()
   selectedQuestion.value = null
+  currentTrend.value = []
+}
+
+async function loadHistory() {
+  historyLoading.value = true
+  historyError.value = ""
+  try {
+    const params = new URLSearchParams({ limit: "50" })
+    if (selectedRoleId.value) params.set("role_id", selectedRoleId.value)
+    const response = await fetch(`/api/history?${params}`)
+    if (!response.ok) throw new Error("无法读取训练历史")
+    historyItems.value = await response.json()
+  } catch (error) {
+    historyError.value = error.message || "无法读取训练历史"
+  } finally {
+    historyLoading.value = false
+  }
+}
+
+async function loadTrend(questionId) {
+  if (!questionId) {
+    currentTrend.value = []
+    return
+  }
+  try {
+    const params = new URLSearchParams({ question_id: questionId, limit: "8" })
+    if (selectedRoleId.value) params.set("role_id", selectedRoleId.value)
+    const response = await fetch(`/api/history?${params}`)
+    currentTrend.value = response.ok ? await response.json() : []
+  } catch {
+    currentTrend.value = []
+  }
+}
+
+async function showHistory() {
+  clearTimers()
+  abortRecording()
+  clearRecording()
+  selectedQuestion.value = null
+  currentTrend.value = []
+  pageMode.value = "history"
+  await loadHistory()
+}
+
+function showQuestionBank() {
+  pageMode.value = "practice"
+}
+
+async function openHistoryItem(item) {
+  clearTimers()
+  abortRecording()
+  clearRecording()
+  try {
+    const [answerResponse, questionResponse] = await Promise.all([
+      fetch(`/api/reports/${item.answer_id}`),
+      fetch(`/api/questions/${item.question_id}`),
+    ])
+    if (!answerResponse.ok || !questionResponse.ok) {
+      throw new Error("无法打开这份报告")
+    }
+    selectedQuestion.value = await questionResponse.json()
+    currentAnswer.value = await answerResponse.json()
+    recordingState.value = "completed"
+    recorderMessage.value = "已打开本机历史报告。"
+    pageMode.value = "practice"
+    await loadTrend(item.question_id)
+    await nextTick()
+    document.querySelector(".recorder-shell")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    })
+  } catch (error) {
+    historyError.value = error.message || "无法打开这份报告"
+  }
+}
+
+async function restartCurrentQuestion() {
+  if (selectedQuestion.value) await openPractice(selectedQuestion.value)
 }
 
 function supportedMimeType() {
@@ -265,6 +354,7 @@ async function pollAnswer(answerId) {
     recordingState.value = answer.task.status
     if (answer.task.status === "completed") {
       recorderMessage.value = "分析完成。以下指标仅用于训练反馈。"
+      await Promise.all([loadHistory(), loadTrend(answer.question_id)])
       return
     }
     if (answer.task.status === "failed") {
@@ -299,7 +389,15 @@ onBeforeUnmount(() => {
           <span class="brand-mark">职</span>
           <span>职镜</span>
         </a>
-        <span class="stage-badge">工程实训 · 阶段 3</span>
+        <div class="nav-actions">
+          <button type="button" :class="{ active: pageMode === 'practice' }" @click="showQuestionBank">
+            题库训练
+          </button>
+          <button type="button" :class="{ active: pageMode === 'history' }" @click="showHistory">
+            训练历史 <span>{{ historyItems.length }}</span>
+          </button>
+          <span class="stage-badge">工程实训 · 阶段 4</span>
+        </div>
       </nav>
 
       <div class="hero-content">
@@ -318,21 +416,22 @@ onBeforeUnmount(() => {
             <li><span>02</span>录制中文回答</li>
             <li><span>03</span>查看分析与建议</li>
           </ol>
-          <p class="status-note">当前可录音、上传并运行本地语音分析</p>
+          <p class="status-note">当前可生成离线证据报告并查看同题训练趋势</p>
         </aside>
       </div>
     </section>
 
     <section class="content-shell">
-      <div class="section-heading">
+      <template v-if="pageMode === 'practice'">
+        <div class="section-heading">
         <div>
           <p class="eyebrow dark">QUESTION BANK</p>
           <h2>从一个具体问题开始</h2>
         </div>
         <p>题库目前为 AI 初稿，需经团队人工审核后用于正式评测。</p>
-      </div>
+        </div>
 
-      <div v-if="roles.length" class="role-tabs" aria-label="岗位选择">
+        <div v-if="roles.length" class="role-tabs" aria-label="岗位选择">
         <button
           v-for="role in roles"
           :key="role.id"
@@ -343,9 +442,9 @@ onBeforeUnmount(() => {
           {{ role.name }}
           <span>{{ role.question_count }} 题</span>
         </button>
-      </div>
+        </div>
 
-      <div v-if="categories.length > 1" class="filters">
+        <div v-if="categories.length > 1" class="filters">
         <button
           v-for="category in categories"
           :key="category"
@@ -355,14 +454,14 @@ onBeforeUnmount(() => {
         >
           {{ category }}
         </button>
-      </div>
+        </div>
 
-      <div v-if="loading" class="state-panel">正在加载题库…</div>
-      <div v-else-if="errorMessage" class="state-panel error">
+        <div v-if="loading" class="state-panel">正在加载题库…</div>
+        <div v-else-if="errorMessage" class="state-panel error">
         <strong>加载失败</strong>
         <span>{{ errorMessage }}，请确认后端服务已启动。</span>
-      </div>
-      <div v-else class="question-grid">
+        </div>
+        <div v-else class="question-grid">
         <article
           v-for="(question, index) in visibleQuestions"
           :key="question.id"
@@ -388,9 +487,9 @@ onBeforeUnmount(() => {
             开始练习
           </button>
         </article>
-      </div>
+        </div>
 
-      <section v-if="selectedQuestion" class="recorder-shell" aria-live="polite">
+        <section v-if="selectedQuestion" class="recorder-shell" aria-live="polite">
         <button class="close-button" type="button" aria-label="关闭练习" @click="closePractice">
           ×
         </button>
@@ -462,36 +561,31 @@ onBeforeUnmount(() => {
 
         <p v-if="recorderMessage" class="recorder-message">{{ recorderMessage }}</p>
 
-        <div v-if="currentAnswer?.task.status === 'completed'" class="analysis-result">
-          <div class="transcript-panel">
-            <p>转写文本</p>
-            <blockquote>{{ currentAnswer.transcript || "未识别到有效语音" }}</blockquote>
+          <ReportPanel
+            v-if="currentAnswer?.task.status === 'completed' && currentAnswer.report"
+            :answer="currentAnswer"
+            :question="selectedQuestion"
+            :trend="currentTrend"
+            @practice-again="restartCurrentQuestion"
+          />
+          <div
+            v-else-if="currentAnswer?.task.status === 'completed'"
+            class="state-panel error"
+          >
+            这条旧记录没有阶段 4 报告，请重新练习本题生成新报告。
           </div>
-          <div class="metric-grid">
-            <article>
-              <span>有效语速</span>
-              <strong>{{ currentAnswer.metrics.speaking_rate_per_min }}</strong>
-              <small>字/词组 · 分钟</small>
-            </article>
-            <article>
-              <span>明显停顿</span>
-              <strong>{{ currentAnswer.metrics.pause_count }}</strong>
-              <small>≥ 0.5 秒</small>
-            </article>
-            <article>
-              <span>最长停顿</span>
-              <strong>{{ currentAnswer.metrics.longest_pause_sec }}</strong>
-              <small>秒</small>
-            </article>
-            <article>
-              <span>语气词</span>
-              <strong>{{ currentAnswer.metrics.filler_count }}</strong>
-              <small>仅作客观计数</small>
-            </article>
-          </div>
-          <p class="metric-note">{{ currentAnswer.metrics.metric_note }}</p>
-        </div>
-      </section>
+        </section>
+      </template>
+
+      <HistoryPanel
+        v-else
+        :items="historyItems"
+        :loading="historyLoading"
+        :error="historyError"
+        @open="openHistoryItem"
+        @refresh="loadHistory"
+        @back="showQuestionBank"
+      />
     </section>
   </main>
 </template>

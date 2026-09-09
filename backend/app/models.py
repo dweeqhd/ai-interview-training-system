@@ -50,6 +50,9 @@ class InterviewAnswer(Base):
     analysis_task: Mapped["AnalysisTask"] = relationship(
         back_populates="answer", cascade="all, delete-orphan", uselist=False
     )
+    analysis_report: Mapped["AnalysisReport | None"] = relationship(
+        back_populates="answer", cascade="all, delete-orphan", uselist=False
+    )
 
 
 class AnalysisTask(Base):
@@ -69,3 +72,21 @@ class AnalysisTask(Base):
     )
 
     answer: Mapped[InterviewAnswer] = relationship(back_populates="analysis_task")
+
+
+class AnalysisReport(Base):
+    __tablename__ = "analysis_reports"
+
+    answer_id: Mapped[str] = mapped_column(
+        ForeignKey("interview_answers.id"), primary_key=True
+    )
+    engine_version: Mapped[str] = mapped_column(String(40))
+    report_json: Mapped[dict[str, Any]] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+
+    answer: Mapped[InterviewAnswer] = relationship(back_populates="analysis_report")

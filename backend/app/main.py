@@ -4,8 +4,8 @@ from uuid import uuid4
 
 from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
 
 from app.database import get_db, init_database
 from app.models import AnalysisTask, InterviewAnswer, TrainingSession
@@ -13,6 +13,7 @@ from app.schemas import (
     AnalysisTaskResponse,
     AnswerResponse,
     HealthStatus,
+    HistoryItem,
     Question,
     RoleSummary,
     SessionCreate,
@@ -55,7 +56,7 @@ def health_check() -> HealthStatus:
     return HealthStatus(
         status="ok",
         service="ai-interview-api",
-        stage=3,
+        stage=4,
         speech_environment="cpu-ready",
     )
 
@@ -91,6 +92,7 @@ def _answer_response(answer: InterviewAnswer) -> AnswerResponse:
         duration_sec=answer.duration_sec,
         transcript=answer.transcript,
         metrics=answer.metrics_json,
+        report=answer.analysis_report.report_json if answer.analysis_report else None,
         created_at=answer.created_at,
         task=AnalysisTaskResponse.model_validate(answer.analysis_task),
     )
@@ -183,10 +185,78 @@ def answer_detail(
 ) -> AnswerResponse:
     statement = (
         select(InterviewAnswer)
-        .options(selectinload(InterviewAnswer.analysis_task))
+        .options(
+            selectinload(InterviewAnswer.analysis_task),
+            selectinload(InterviewAnswer.analysis_report),
+        )
         .where(InterviewAnswer.id == answer_id)
     )
     answer = database.scalar(statement)
     if answer is None:
         raise HTTPException(status_code=404, detail="回答记录不存在")
     return _answer_response(answer)
+
+
+@app.get("/api/reports/{answer_id}", response_model=AnswerResponse)
+def report_detail(
+    answer_id: str,
+    database: Session = Depends(get_db),
+) -> AnswerResponse:
+    answer = database.scalar(
+        select(InterviewAnswer)
+        .options(
+            selectinload(InterviewAnswer.analysis_task),
+            selectinload(InterviewAnswer.analysis_report),
+        )
+        .where(InterviewAnswer.id == answer_id)
+    )
+    if answer is None:
+        raise HTTPException(status_code=404, detail="回答记录不存在")
+    if answer.analysis_report is None:
+        raise HTTPException(status_code=409, detail="分析报告尚未生成")
+    return _answer_response(answer)
+
+
+@app.get("/api/history", response_model=list[HistoryItem])
+def training_history(
+    role_id: str | None = Query(default=None),
+    question_id: str | None = Query(default=None),
+    limit: int = Query(default=30, ge=1, le=100),
+    database: Session = Depends(get_db),
+) -> list[HistoryItem]:
+    statement = (
+        select(InterviewAnswer)
+        .join(InterviewAnswer.training_session)
+        .options(
+            selectinload(InterviewAnswer.analysis_report),
+            selectinload(InterviewAnswer.training_session),
+        )
+        .where(InterviewAnswer.analysis_report.has())
+        .order_by(InterviewAnswer.created_at.desc())
+        .limit(limit)
+    )
+    if role_id:
+        statement = statement.where(TrainingSession.role_id == role_id)
+    if question_id:
+        statement = statement.where(InterviewAnswer.question_id == question_id)
+
+    items = []
+    for answer in database.scalars(statement).all():
+        question = get_question(answer.question_id)
+        report = answer.analysis_report.report_json
+        if question is None:
+            continue
+        items.append(
+            HistoryItem(
+                answer_id=answer.id,
+                session_id=answer.session_id,
+                question_id=answer.question_id,
+                question=question.question,
+                category=question.category,
+                duration_sec=answer.duration_sec,
+                created_at=answer.created_at,
+                scores=report["scores"],
+                summary=report["summary"],
+            )
+        )
+    return items

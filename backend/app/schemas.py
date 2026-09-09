@@ -58,6 +58,18 @@ class AnswerResponse(BaseModel):
     duration_sec: float
     transcript: str | None
     metrics: dict[str, Any] | None
+    report: dict[str, Any] | None
     created_at: datetime
     task: AnalysisTaskResponse
 
+
+class HistoryItem(BaseModel):
+    answer_id: str
+    session_id: str
+    question_id: str
+    question: str
+    category: str
+    duration_sec: float
+    created_at: datetime
+    scores: dict[str, Any]
+    summary: str
