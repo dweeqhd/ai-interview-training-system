@@ -1,0 +1,49 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Databases and runtime files
+*.db
+*.sqlite
+*.sqlite3
+logs/
+uploads/
+
+# Models
+models/
+model_cache/
+
+# Private audio and annotations
+data/raw_audio/
+data/processed_audio/
+data/annotations/private/
+data/demo_samples/private/
+*.wav
+*.mp3
+*.m4a
+*.webm
+*.flac
+

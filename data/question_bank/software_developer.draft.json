@@ -1,0 +1,146 @@
+{
+  "version": "0.1.0",
+  "status": "ai_draft_pending_human_review",
+  "role": {
+    "id": "software_developer",
+    "name": "软件开发岗"
+  },
+  "questions": [
+    {
+      "id": "dev_basic_01",
+      "category": "自我介绍",
+      "question": "请用一分钟进行自我介绍，并说明你应聘软件开发岗位的优势。",
+      "expected_points": ["教育或专业背景", "技术能力", "项目经历", "岗位匹配"],
+      "star_expected": [],
+      "duration_sec": [45, 90],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_project_01",
+      "category": "项目经历",
+      "question": "请介绍一个你参与过的项目，并说明你负责的部分。",
+      "expected_points": ["项目背景", "个人职责", "技术方案", "实施过程", "项目结果"],
+      "star_expected": ["S", "T", "A", "R"],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_project_02",
+      "category": "项目经历",
+      "question": "项目中最困难的技术问题是什么，你是如何解决的？",
+      "expected_points": ["问题背景", "个人任务", "排查过程", "解决方案", "验证结果"],
+      "star_expected": ["S", "T", "A", "R"],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_project_03",
+      "category": "项目经历",
+      "question": "请说明一次你对项目性能或代码质量进行优化的经历。",
+      "expected_points": ["优化前问题", "分析方法", "个人行动", "量化变化", "复盘"],
+      "star_expected": ["S", "T", "A", "R"],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_debug_01",
+      "category": "问题排查",
+      "question": "当程序出现难以复现的错误时，你通常如何定位问题？",
+      "expected_points": ["复现条件", "日志与监控", "缩小范围", "假设验证", "回归测试"],
+      "star_expected": [],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_database_01",
+      "category": "数据库",
+      "question": "请介绍一次你设计或优化数据库的经历。",
+      "expected_points": ["业务需求", "表结构", "索引或查询", "一致性", "效果"],
+      "star_expected": ["S", "T", "A", "R"],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_api_01",
+      "category": "接口设计",
+      "question": "你会如何设计一个稳定且易维护的后端接口？",
+      "expected_points": ["输入输出", "错误处理", "鉴权", "幂等性", "版本与文档", "测试"],
+      "star_expected": [],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_test_01",
+      "category": "软件测试",
+      "question": "你如何保证自己提交的代码质量？",
+      "expected_points": ["代码审查", "单元测试", "接口测试", "异常场景", "持续集成"],
+      "star_expected": [],
+      "duration_sec": [45, 90],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_team_01",
+      "category": "团队协作",
+      "question": "请描述一次你与团队成员意见不一致的经历，以及你如何处理。",
+      "expected_points": ["分歧背景", "沟通过程", "事实依据", "解决方案", "结果与反思"],
+      "star_expected": ["S", "T", "A", "R"],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_learning_01",
+      "category": "学习能力",
+      "question": "请举例说明你如何在短时间内学习一项新技术并应用到项目中。",
+      "expected_points": ["学习目标", "资料选择", "练习方法", "项目应用", "效果"],
+      "star_expected": ["S", "T", "A", "R"],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_tradeoff_01",
+      "category": "技术决策",
+      "question": "在项目中面对多个技术方案时，你如何进行取舍？",
+      "expected_points": ["需求约束", "候选方案", "比较维度", "最终决策", "验证方式"],
+      "star_expected": [],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_security_01",
+      "category": "安全意识",
+      "question": "开发一个需要用户登录和文件上传的系统时，你会关注哪些安全问题？",
+      "expected_points": ["身份认证", "权限控制", "文件校验", "敏感信息", "日志与审计"],
+      "star_expected": [],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_delivery_01",
+      "category": "项目管理",
+      "question": "如果开发进度可能延期，你会如何处理？",
+      "expected_points": ["识别风险", "评估影响", "调整优先级", "沟通同步", "保证质量"],
+      "star_expected": [],
+      "duration_sec": [45, 90],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_failure_01",
+      "category": "复盘反思",
+      "question": "请介绍一次没有达到预期的项目经历，以及你从中学到了什么。",
+      "expected_points": ["原目标", "未达预期原因", "个人责任", "改进措施", "后续变化"],
+      "star_expected": ["S", "T", "A", "R"],
+      "duration_sec": [60, 120],
+      "review_status": "pending"
+    },
+    {
+      "id": "dev_goal_01",
+      "category": "职业规划",
+      "question": "你希望在未来两到三年内成长为怎样的软件开发人员？",
+      "expected_points": ["目标方向", "能力差距", "学习计划", "实践方式", "岗位联系"],
+      "star_expected": [],
+      "duration_sec": [45, 90],
+      "review_status": "pending"
+    }
+  ]
+}
+
