@@ -220,6 +220,7 @@ def test_report_and_history_endpoints_return_completed_report(
     report = build_analysis_report(question, transcript, metrics)
     with isolated_database() as database:
         answer = database.get(InterviewAnswer, answer_payload["id"])
+        answer.asr_transcript = transcript
         answer.transcript = transcript
         answer.metrics_json = metrics
         answer.analysis_task.status = "completed"
@@ -233,6 +234,21 @@ def test_report_and_history_endpoints_return_completed_report(
     report_response = client.get(f"/api/reports/{answer_payload['id']}")
     assert report_response.status_code == 200
     assert report_response.json()["report"]["scores"]["total"] == report["scores"]["total"]
+
+    corrected_transcript = (
+        "当时系统接口响应很慢，我负责后端优化。"
+        "我排查日志并增加索引，最终响应时间降低30%，项目通过验收。"
+    )
+    correction_response = client.put(
+        f"/api/answers/{answer_payload['id']}/transcript",
+        json={"transcript": corrected_transcript},
+    )
+    assert correction_response.status_code == 200
+    corrected_answer = correction_response.json()
+    assert corrected_answer["asr_transcript"] == transcript
+    assert corrected_answer["transcript"] == corrected_transcript
+    assert corrected_answer["transcript_source"] == "user_corrected"
+    assert corrected_answer["report"]["transcript_source"] == "user_corrected"
 
     history_response = client.get(
         "/api/history",
@@ -302,5 +318,6 @@ def test_background_job_persists_stage_four_report(
     with isolated_database() as database:
         answer = database.get(InterviewAnswer, "background-report-answer")
         assert answer.analysis_task.status == "completed"
+        assert answer.asr_transcript == answer.transcript
         assert answer.analysis_report.engine_version == "rules-v2-dev30-syn18"
         assert answer.analysis_report.report_json["scores"]["total"] > 0

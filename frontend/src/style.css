@@ -797,6 +797,49 @@ button:disabled,
   line-height: 1.9;
 }
 
+.report-transcript-editor {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 150px;
+  margin: 12px 0;
+  padding: 18px;
+  resize: vertical;
+  border: 1px solid #d4cec1;
+  border-radius: 14px;
+  outline: none;
+  background: #f8f5ee;
+  color: #25362f;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.report-transcript-editor:focus {
+  border-color: #557c69;
+  box-shadow: 0 0 0 3px rgba(85, 124, 105, 0.12);
+}
+
+.transcript-actions,
+.transcript-actions > div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transcript-actions span {
+  color: #737d77;
+  font-size: 13px;
+}
+
+.transcript-save {
+  padding: 10px 16px;
+}
+
+.transcript-message {
+  margin-top: 10px;
+}
+
 .evidence-list {
   display: grid;
   gap: 10px;
@@ -1208,6 +1251,15 @@ button:disabled,
   }
 
   .action-row {
+    flex-wrap: wrap;
+  }
+
+  .transcript-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .transcript-actions > div {
     flex-wrap: wrap;
   }
 

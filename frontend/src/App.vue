@@ -21,6 +21,8 @@ const audioUrl = ref("")
 const recordingSeconds = ref(0)
 const currentSessionId = ref("")
 const currentAnswer = ref(null)
+const transcriptSaving = ref(false)
+const transcriptUpdateMessage = ref("")
 const pageMode = ref("practice")
 const historyItems = ref([])
 const historyLoading = ref(false)
@@ -123,6 +125,8 @@ function clearRecording() {
   recordedFileName.value = ""
   recordingSeconds.value = 0
   currentAnswer.value = null
+  transcriptSaving.value = false
+  transcriptUpdateMessage.value = ""
   recorderMessage.value = ""
   recordingState.value = "idle"
 }
@@ -368,6 +372,35 @@ async function pollAnswer(answerId) {
   }
 }
 
+async function updateTranscript(transcript) {
+  if (!currentAnswer.value?.id) return
+  transcriptSaving.value = true
+  transcriptUpdateMessage.value = "正在根据修正文本重新生成报告…"
+  try {
+    const response = await fetch(
+      `/api/answers/${currentAnswer.value.id}/transcript`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcript }),
+      },
+    )
+    const payload = await response.json()
+    if (!response.ok) {
+      throw new Error(
+        typeof payload.detail === "string" ? payload.detail : "转写修正失败",
+      )
+    }
+    currentAnswer.value = payload
+    transcriptUpdateMessage.value = "已保存修正文本，并重新生成内容报告。"
+    await Promise.all([loadHistory(), loadTrend(payload.question_id)])
+  } catch (error) {
+    transcriptUpdateMessage.value = error.message || "转写修正失败"
+  } finally {
+    transcriptSaving.value = false
+  }
+}
+
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60)
   const remaining = String(seconds % 60).padStart(2, "0")
@@ -566,7 +599,10 @@ onBeforeUnmount(() => {
             :answer="currentAnswer"
             :question="selectedQuestion"
             :trend="currentTrend"
+            :transcript-saving="transcriptSaving"
+            :transcript-update-message="transcriptUpdateMessage"
             @practice-again="restartCurrentQuestion"
+            @update-transcript="updateTranscript"
           />
           <div
             v-else-if="currentAnswer?.task.status === 'completed'"

@@ -37,8 +37,10 @@ def process_analysis_task(task_id: str) -> None:
             analysis["transcript"],
             analysis["metrics"],
         )
+        report["transcript_source"] = "asr"
 
         answer.normalized_audio_path = str(normalized_path)
+        answer.asr_transcript = analysis["transcript"]
         answer.transcript = analysis["transcript"]
         answer.metrics_json = analysis["metrics"]
         answer.analysis_report = AnalysisReport(

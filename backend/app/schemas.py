@@ -41,6 +41,10 @@ class SessionResponse(BaseModel):
     created_at: datetime
 
 
+class TranscriptUpdate(BaseModel):
+    transcript: str = Field(min_length=1, max_length=10000)
+
+
 class AnalysisTaskResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -56,7 +60,9 @@ class AnswerResponse(BaseModel):
     session_id: str
     question_id: str
     duration_sec: float
+    asr_transcript: str | None
     transcript: str | None
+    transcript_source: str
     metrics: dict[str, Any] | None
     report: dict[str, Any] | None
     created_at: datetime

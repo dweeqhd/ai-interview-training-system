@@ -1,16 +1,45 @@
 <script setup>
-import { computed } from "vue"
+import { computed, ref, watch } from "vue"
 
 
 const props = defineProps({
   answer: { type: Object, required: true },
   question: { type: Object, required: true },
   trend: { type: Array, default: () => [] },
+  transcriptSaving: { type: Boolean, default: false },
+  transcriptUpdateMessage: { type: String, default: "" },
 })
 
-defineEmits(["practice-again"])
+const emit = defineEmits(["practice-again", "update-transcript"])
 
 const report = computed(() => props.answer.report)
+const transcriptDraft = ref("")
+watch(
+  [() => props.answer.id, () => props.answer.transcript],
+  () => {
+    transcriptDraft.value = props.answer.transcript || ""
+  },
+  { immediate: true },
+)
+const transcriptChanged = computed(
+  () => transcriptDraft.value.trim() !== (props.answer.transcript || "").trim(),
+)
+const canRestoreAsr = computed(
+  () =>
+    Boolean(props.answer.asr_transcript) &&
+    props.answer.asr_transcript !== props.answer.transcript,
+)
+
+function saveTranscript() {
+  const value = transcriptDraft.value.trim()
+  if (value && transcriptChanged.value) emit("update-transcript", value)
+}
+
+function restoreAsrTranscript() {
+  if (!props.answer.asr_transcript) return
+  transcriptDraft.value = props.answer.asr_transcript
+  emit("update-transcript", props.answer.asr_transcript)
+}
 const radarAxes = [
   { key: "题目相关", label: "题目相关", x: 100, y: 12 },
   { key: "结构完整", label: "结构完整", x: 188, y: 100 },
@@ -123,7 +152,40 @@ function formatDate(value) {
           <strong>内容分析以当前转写为依据</strong>
         </div>
       </div>
-      <blockquote class="report-transcript">{{ answer.transcript || "未识别到有效语音" }}</blockquote>
+      <textarea
+        v-model="transcriptDraft"
+        class="report-transcript-editor"
+        rows="5"
+        maxlength="10000"
+        aria-label="可修正的回答转写"
+      ></textarea>
+      <div class="transcript-actions">
+        <span>
+          {{ answer.transcript_source === "user_corrected" ? "当前为人工修正文本" : "当前为模型原始转写" }}
+        </span>
+        <div>
+          <button
+            v-if="canRestoreAsr"
+            type="button"
+            class="outline-action"
+            :disabled="transcriptSaving"
+            @click="restoreAsrTranscript"
+          >
+            恢复原始转写
+          </button>
+          <button
+            type="button"
+            class="primary-action transcript-save"
+            :disabled="transcriptSaving || !transcriptChanged || !transcriptDraft.trim()"
+            @click="saveTranscript"
+          >
+            {{ transcriptSaving ? "重新生成中…" : "保存并重新评分" }}
+          </button>
+        </div>
+      </div>
+      <p v-if="transcriptUpdateMessage" class="metric-note transcript-message">
+        {{ transcriptUpdateMessage }}
+      </p>
     </div>
 
     <div class="report-detail-grid">

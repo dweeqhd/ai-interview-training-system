@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.database import get_db, init_database
-from app.models import AnalysisTask, InterviewAnswer, TrainingSession
+from app.models import AnalysisReport, AnalysisTask, InterviewAnswer, TrainingSession
 from app.schemas import (
     AnalysisTaskResponse,
     AnswerResponse,
@@ -18,9 +18,11 @@ from app.schemas import (
     RoleSummary,
     SessionCreate,
     SessionResponse,
+    TranscriptUpdate,
 )
 from app.services.analysis_jobs import process_analysis_task
 from app.services.audio_processing import AudioProcessingError, probe_audio_duration
+from app.services.content_analyzer import build_analysis_report
 from app.services.question_bank import get_question, get_questions, get_roles
 from app.settings import MAX_AUDIO_BYTES, UPLOAD_DIR, ensure_runtime_directories
 
@@ -38,7 +40,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="AI 面试训练与表达分析系统 API",
     description="为中文模拟面试提供题库与后续分析服务。",
-    version="0.3.0",
+    version="0.3.1",
     lifespan=lifespan,
 )
 
@@ -85,12 +87,22 @@ def question_detail(question_id: str) -> Question:
 
 
 def _answer_response(answer: InterviewAnswer) -> AnswerResponse:
+    original_transcript = answer.asr_transcript or answer.transcript
+    transcript_source = (
+        "pending"
+        if answer.transcript is None
+        else "user_corrected"
+        if original_transcript != answer.transcript
+        else "asr"
+    )
     return AnswerResponse(
         id=answer.id,
         session_id=answer.session_id,
         question_id=answer.question_id,
         duration_sec=answer.duration_sec,
+        asr_transcript=original_transcript,
         transcript=answer.transcript,
+        transcript_source=transcript_source,
         metrics=answer.metrics_json,
         report=answer.analysis_report.report_json if answer.analysis_report else None,
         created_at=answer.created_at,
@@ -194,6 +206,53 @@ def answer_detail(
     answer = database.scalar(statement)
     if answer is None:
         raise HTTPException(status_code=404, detail="回答记录不存在")
+    return _answer_response(answer)
+
+
+@app.put("/api/answers/{answer_id}/transcript", response_model=AnswerResponse)
+def update_answer_transcript(
+    answer_id: str,
+    payload: TranscriptUpdate,
+    database: Session = Depends(get_db),
+) -> AnswerResponse:
+    answer = database.scalar(
+        select(InterviewAnswer)
+        .options(
+            selectinload(InterviewAnswer.analysis_task),
+            selectinload(InterviewAnswer.analysis_report),
+        )
+        .where(InterviewAnswer.id == answer_id)
+    )
+    if answer is None:
+        raise HTTPException(status_code=404, detail="回答记录不存在")
+    if answer.analysis_task.status != "completed" or answer.metrics_json is None:
+        raise HTTPException(status_code=409, detail="语音分析尚未完成，不能修正转写")
+
+    transcript = payload.transcript.strip()
+    if not transcript:
+        raise HTTPException(status_code=422, detail="修正后的转写不能为空")
+    question = get_question(answer.question_id)
+    if question is None:
+        raise HTTPException(status_code=400, detail="题目不存在，无法重新生成报告")
+
+    original_transcript = answer.asr_transcript or answer.transcript or ""
+    if answer.asr_transcript is None:
+        answer.asr_transcript = original_transcript
+    answer.transcript = transcript
+    report = build_analysis_report(question, transcript, answer.metrics_json)
+    report["transcript_source"] = (
+        "asr" if transcript == original_transcript else "user_corrected"
+    )
+    if answer.analysis_report is None:
+        answer.analysis_report = AnalysisReport(
+            answer_id=answer.id,
+            engine_version=report["engine_version"],
+            report_json=report,
+        )
+    else:
+        answer.analysis_report.engine_version = report["engine_version"]
+        answer.analysis_report.report_json = report
+    database.commit()
     return _answer_response(answer)
 
 

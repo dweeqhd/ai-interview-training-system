@@ -38,6 +38,7 @@ class InterviewAnswer(Base):
     audio_path: Mapped[str] = mapped_column(Text)
     normalized_audio_path: Mapped[str | None] = mapped_column(Text, nullable=True)
     duration_sec: Mapped[float] = mapped_column(Float)
+    asr_transcript: Mapped[str | None] = mapped_column(Text, nullable=True)
     transcript: Mapped[str | None] = mapped_column(Text, nullable=True)
     metrics_json: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
