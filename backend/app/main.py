@@ -38,7 +38,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="AI 面试训练与表达分析系统 API",
     description="为中文模拟面试提供题库与后续分析服务。",
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan,
 )
 
@@ -56,7 +56,7 @@ def health_check() -> HealthStatus:
     return HealthStatus(
         status="ok",
         service="ai-interview-api",
-        stage=4,
+        stage=5,
         speech_environment="cpu-ready",
     )
 

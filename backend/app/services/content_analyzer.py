@@ -8,13 +8,30 @@ from app.schemas import Question
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-RULES_FILE = PROJECT_ROOT / "data" / "analysis_rules" / "rules.v1.json"
+RULES_FILE = PROJECT_ROOT / "data" / "analysis_rules" / "rules.v2.json"
+
+
+def _merge_rules(base: dict[str, Any], overrides: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for key, value in overrides.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _merge_rules(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
 
 
 @lru_cache(maxsize=1)
 def load_analysis_rules() -> dict[str, Any]:
     with RULES_FILE.open(encoding="utf-8") as file:
-        return json.load(file)
+        rules = json.load(file)
+    extends = rules.pop("extends", None)
+    if not extends:
+        return rules
+    base_file = RULES_FILE.parent / Path(extends).name
+    with base_file.open(encoding="utf-8") as file:
+        base_rules = json.load(file)
+    return _merge_rules(base_rules, rules)
 
 
 def _normalized(text: str) -> str:
@@ -117,6 +134,7 @@ def _structure_analysis(
 def _quantified_evidence(transcript: str) -> str:
     pattern = re.compile(
         r"(?:\d+(?:\.\d+)?\s*(?:%|％|秒|毫秒|分钟|小时|天|周|个月|人|次|个|条|倍|万)|"
+        r"[一二三四五六七八九十百零两]+\s*(?:秒|分钟|小时|天|周|个月|人|次|个|条|倍|万)|"
         r"百分之[一二三四五六七八九十百零]+|从.{0,18}(?:提升|降低|减少|缩短|增加).{0,18})"
     )
     for sentence in _sentences(transcript):

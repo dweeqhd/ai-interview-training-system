@@ -10,6 +10,7 @@ from app.settings import ASR_MODEL_DIR, PUNC_MODEL_DIR, VAD_MODEL_DIR
 _model: Any | None = None
 _model_lock = threading.Lock()
 FILLER_WORDS = ("嗯", "呃", "额", "啊", "那个", "就是", "然后")
+SPEECH_METRIC_VERSION = "speech-metrics-v2-token-timestamps"
 
 
 def _local_model_or_alias(model_path: Path, alias: str) -> str:
@@ -41,6 +42,33 @@ def get_wav_duration(audio_path: Path) -> float:
 
 
 def _normalize_segments(result: dict[str, Any]) -> list[dict[str, Any]]:
+    token_timestamps = []
+    for item in result.get("timestamp", []):
+        if not isinstance(item, (list, tuple)) or len(item) < 2:
+            continue
+        start_ms = int(item[0])
+        end_ms = int(item[1])
+        if end_ms > start_ms:
+            token_timestamps.append((start_ms, end_ms))
+    token_timestamps.sort()
+    if token_timestamps:
+        # Paraformer 的 sentence_info 只保留整句边界，会漏掉句内卡顿。
+        # 使用字词时间戳，并把小于 500ms 的自然间隔合并为同一语音段。
+        segments = []
+        current_start, current_end = token_timestamps[0]
+        for start_ms, end_ms in token_timestamps[1:]:
+            if start_ms - current_end < 500:
+                current_end = max(current_end, end_ms)
+                continue
+            segments.append(
+                {"start_ms": current_start, "end_ms": current_end, "text": ""}
+            )
+            current_start, current_end = start_ms, end_ms
+        segments.append(
+            {"start_ms": current_start, "end_ms": current_end, "text": ""}
+        )
+        return segments
+
     segments = []
     for item in result.get("sentence_info", []):
         start_ms = int(item.get("start", 0))
@@ -108,6 +136,7 @@ def calculate_metrics(
         "filler_details": filler_counts,
         "segments": segments,
         "pauses": pauses,
+        "metric_version": SPEECH_METRIC_VERSION,
         "metric_note": "语速按中文字符与英文/数字词组计数；停顿阈值需用人工数据校准。",
     }
 

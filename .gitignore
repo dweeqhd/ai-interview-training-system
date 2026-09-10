@@ -50,6 +50,10 @@ data/demo_samples/private/
 # Filled copies returned by annotators
 outputs/annotation-kit-*/AI面试数据标注表_L*.xlsx
 outputs/annotation-kit-*/已填写/
+# Locally returned CSV annotation packages (may contain transcripts and comments)
+data/annotation-kit-*/
+data/录音/
+data/录音.zip
 *.wav
 *.mp3
 *.m4a

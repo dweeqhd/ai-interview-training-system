@@ -396,7 +396,7 @@ onBeforeUnmount(() => {
           <button type="button" :class="{ active: pageMode === 'history' }" @click="showHistory">
             训练历史 <span>{{ historyItems.length }}</span>
           </button>
-          <span class="stage-badge">工程实训 · 阶段 4</span>
+          <span class="stage-badge">工程实训 · 阶段 5</span>
         </div>
       </nav>
 

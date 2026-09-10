@@ -1,0 +1,308 @@
+{
+  "version": "synthetic-content-controls-v1",
+  "source_type": "synthetic_ai",
+  "purpose": "补充规则负例、缺项例和边界例；不替代真人语音、人工评分或测试集",
+  "generation_basis": "仅依据公开的项目题库和 rules-v1 维度生成，不使用私人录音或人工转写原文",
+  "samples": [
+    {
+      "id": "SYN-BASIC-001",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_basic_01",
+      "case_type": "跑题负例",
+      "transcript": "我平时喜欢跑步和摄影，周末经常和朋友去公园。",
+      "expected_present": [],
+      "expected_absent": [
+        "keyword:教育或专业背景",
+        "keyword:技术能力",
+        "keyword:项目经历",
+        "keyword:岗位匹配",
+        "evidence:specificity",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-BASIC-002",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_basic_01",
+      "case_type": "关键词堆砌",
+      "transcript": "专业、编程、项目、岗位，这些都是我的关键词。",
+      "expected_present": [
+        "keyword:教育或专业背景",
+        "keyword:技术能力",
+        "keyword:项目经历",
+        "keyword:岗位匹配"
+      ],
+      "expected_absent": [
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-BASIC-003",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_basic_01",
+      "case_type": "单要点正例",
+      "transcript": "我是计算机科学专业的应届生，在校完成了软件工程课程。",
+      "expected_present": ["keyword:教育或专业背景"],
+      "expected_absent": [
+        "keyword:项目经历",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-BASIC-004",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_basic_01",
+      "case_type": "单要点正例",
+      "transcript": "我熟悉 Java 和 Python，能够独立编程并阅读框架文档。",
+      "expected_present": ["keyword:技术能力"],
+      "expected_absent": [
+        "keyword:项目经历",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-BASIC-005",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_basic_01",
+      "case_type": "单要点正例",
+      "transcript": "我的优势是学习能力和执行力较强，与软件开发岗位比较匹配。",
+      "expected_present": ["keyword:岗位匹配"],
+      "expected_absent": [
+        "keyword:项目经历",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-BASIC-006",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_basic_01",
+      "case_type": "完整正例",
+      "transcript": "我是计算机专业应届生，熟悉 Java 和数据库。在课程项目中，我负责接口开发，我实现了三个模块，最终通过验收。这些经验与开发岗位匹配。",
+      "expected_present": [
+        "keyword:教育或专业背景",
+        "keyword:技术能力",
+        "keyword:项目经历",
+        "keyword:岗位匹配",
+        "evidence:specificity",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ],
+      "expected_absent": []
+    },
+    {
+      "id": "SYN-PROJECT-001",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_01",
+      "case_type": "跑题负例",
+      "transcript": "我认为保持规律作息很重要，每天都会安排运动。",
+      "expected_present": [],
+      "expected_absent": [
+        "structure:S",
+        "structure:T",
+        "structure:A",
+        "structure:R",
+        "evidence:responsibility",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-PROJECT-002",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_01",
+      "case_type": "团队职责边界",
+      "transcript": "团队负责开发课程管理平台，最终完成上线。",
+      "expected_present": ["structure:R", "evidence:result"],
+      "expected_absent": [
+        "structure:T",
+        "structure:A",
+        "evidence:responsibility",
+        "evidence:action",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-PROJECT-003",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_01",
+      "case_type": "单要点正例",
+      "transcript": "我负责后端接口和数据库设计。",
+      "expected_present": [
+        "keyword:个人职责",
+        "structure:T",
+        "evidence:responsibility"
+      ],
+      "expected_absent": [
+        "structure:S",
+        "structure:A",
+        "structure:R",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-PROJECT-004",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_01",
+      "case_type": "缺结果",
+      "transcript": "在项目中，我负责后端接口。我设计了数据表，并实现了异常处理。",
+      "expected_present": [
+        "structure:S",
+        "structure:T",
+        "structure:A",
+        "evidence:responsibility",
+        "evidence:action"
+      ],
+      "expected_absent": [
+        "structure:R",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-PROJECT-005",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_01",
+      "case_type": "缺行动",
+      "transcript": "在项目中，最终系统上线并通过验收。",
+      "expected_present": ["structure:S", "structure:R", "evidence:result"],
+      "expected_absent": [
+        "structure:A",
+        "evidence:responsibility",
+        "evidence:action",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-PROJECT-006",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_01",
+      "case_type": "完整正例",
+      "transcript": "当时课程项目需要开发预约系统，我负责后端接口。目标是两周完成，我设计了数据库并实现鉴权，最终响应时间降低了 30%，系统通过验收。",
+      "expected_present": [
+        "structure:S",
+        "structure:T",
+        "structure:A",
+        "structure:R",
+        "evidence:responsibility",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ],
+      "expected_absent": []
+    },
+    {
+      "id": "SYN-PROBLEM-001",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_02",
+      "case_type": "跑题负例",
+      "transcript": "我最近阅读了几本小说，也参加了校园跑步活动。",
+      "expected_present": [],
+      "expected_absent": [
+        "structure:S",
+        "structure:T",
+        "structure:A",
+        "structure:R",
+        "evidence:responsibility",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-PROBLEM-002",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_02",
+      "case_type": "单要点正例",
+      "transcript": "在项目中遇到了接口超时问题。",
+      "expected_present": ["keyword:问题背景", "structure:S"],
+      "expected_absent": [
+        "structure:A",
+        "structure:R",
+        "evidence:responsibility",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-PROBLEM-003",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_02",
+      "case_type": "缺结果",
+      "transcript": "当时接口频繁超时，我负责排查。我采用日志对比定位慢查询，并优化了索引。",
+      "expected_present": [
+        "structure:S",
+        "structure:T",
+        "structure:A",
+        "evidence:responsibility",
+        "evidence:action"
+      ],
+      "expected_absent": ["structure:R", "evidence:result", "evidence:quantified"]
+    },
+    {
+      "id": "SYN-PROBLEM-004",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_02",
+      "case_type": "缺行动",
+      "transcript": "当时系统频繁报错，最终问题解决了。",
+      "expected_present": ["structure:S", "structure:R", "evidence:result"],
+      "expected_absent": [
+        "structure:A",
+        "evidence:responsibility",
+        "evidence:action",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-PROBLEM-005",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_02",
+      "case_type": "仅结果",
+      "transcript": "查询原来很慢，压测结果达到预期。",
+      "expected_present": ["keyword:问题背景", "keyword:验证结果", "evidence:result"],
+      "expected_absent": [
+        "structure:T",
+        "structure:A",
+        "evidence:responsibility",
+        "evidence:action",
+        "evidence:quantified"
+      ]
+    },
+    {
+      "id": "SYN-PROBLEM-006",
+      "source_type": "synthetic_ai",
+      "question_id": "dev_project_02",
+      "case_type": "完整正例",
+      "transcript": "当时接口出现超时，我负责定位问题。目标是恢复稳定服务，我通过日志排查发现慢查询，随后优化索引。最终 P99 从 2 秒降到 300 毫秒，并通过压测验证。",
+      "expected_present": [
+        "keyword:问题背景",
+        "keyword:个人任务",
+        "keyword:排查过程",
+        "keyword:解决方案",
+        "keyword:验证结果",
+        "structure:S",
+        "structure:T",
+        "structure:A",
+        "structure:R",
+        "evidence:responsibility",
+        "evidence:action",
+        "evidence:result",
+        "evidence:quantified"
+      ],
+      "expected_absent": []
+    }
+  ]
+}

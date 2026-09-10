@@ -11,7 +11,7 @@ from app.main import app
 from app.models import AnalysisReport, InterviewAnswer
 from app.services.content_analyzer import build_analysis_report
 from app.services.question_bank import get_question
-from app.services.speech_analyzer import calculate_metrics
+from app.services.speech_analyzer import _normalize_segments, calculate_metrics
 
 
 client = TestClient(app)
@@ -52,7 +52,7 @@ def test_health_check() -> None:
     assert response.json() == {
         "status": "ok",
         "service": "ai-interview-api",
-        "stage": 4,
+        "stage": 5,
         "speech_environment": "cpu-ready",
     }
 
@@ -142,6 +142,26 @@ def test_pause_and_speaking_rate_metrics_are_explainable() -> None:
     assert metrics["speaking_rate_per_min"] > 0
 
 
+def test_token_timestamps_preserve_intra_sentence_pauses() -> None:
+    result = {
+        "timestamp": [[100, 300], [340, 500], [1200, 1400], [1450, 1600]],
+        "sentence_info": [
+            {"start": 100, "end": 1600, "text": "完整的一句话"}
+        ],
+    }
+
+    segments = _normalize_segments(result)
+    metrics = calculate_metrics("完整的一句话", segments, 2.0)
+
+    assert segments == [
+        {"start_ms": 100, "end_ms": 500, "text": ""},
+        {"start_ms": 1200, "end_ms": 1600, "text": ""},
+    ]
+    assert metrics["pause_count"] == 1
+    assert metrics["longest_pause_sec"] == 0.7
+    assert metrics["metric_version"] == "speech-metrics-v2-token-timestamps"
+
+
 def test_rule_report_keeps_scores_and_evidence_explainable() -> None:
     question = get_question("dev_project_01")
     assert question is not None
@@ -160,7 +180,7 @@ def test_rule_report_keeps_scores_and_evidence_explainable() -> None:
     metrics["speaking_rate_per_min"] = 144
     report = build_analysis_report(question, transcript, metrics)
 
-    assert report["engine_version"] == "rules-v1"
+    assert report["engine_version"] == "rules-v2-dev30-syn18"
     assert report["scores"]["content"] >= 45
     assert report["structure_analysis"]["present_count"] == 4
     assert report["evidence_analysis"]["present_count"] == 4
@@ -282,5 +302,5 @@ def test_background_job_persists_stage_four_report(
     with isolated_database() as database:
         answer = database.get(InterviewAnswer, "background-report-answer")
         assert answer.analysis_task.status == "completed"
-        assert answer.analysis_report.engine_version == "rules-v1"
+        assert answer.analysis_report.engine_version == "rules-v2-dev30-syn18"
         assert answer.analysis_report.report_json["scores"]["total"] > 0
