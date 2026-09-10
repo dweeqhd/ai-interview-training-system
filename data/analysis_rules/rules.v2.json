@@ -1,5 +1,5 @@
 {
-  "version": "rules-v2-dev30-syn18",
+  "version": "rules-v2.1-dev30-syn18-resp-sync",
   "status": "development_calibrated_single_annotator",
   "extends": "rules.v1.json",
   "exact_point_cues": {

@@ -40,7 +40,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="AI 面试训练与表达分析系统 API",
     description="为中文模拟面试提供题库与后续分析服务。",
-    version="0.3.2",
+    version="0.3.3",
     lifespan=lifespan,
 )
 

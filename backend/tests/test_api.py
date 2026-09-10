@@ -180,7 +180,7 @@ def test_rule_report_keeps_scores_and_evidence_explainable() -> None:
     metrics["speaking_rate_per_min"] = 144
     report = build_analysis_report(question, transcript, metrics)
 
-    assert report["engine_version"] == "rules-v2-dev30-syn18"
+    assert report["engine_version"] == "rules-v2.1-dev30-syn18-resp-sync"
     assert report["scores"]["content"] >= 45
     assert report["structure_analysis"]["present_count"] == 4
     assert report["evidence_analysis"]["present_count"] == 4
@@ -319,5 +319,36 @@ def test_background_job_persists_stage_four_report(
         answer = database.get(InterviewAnswer, "background-report-answer")
         assert answer.analysis_task.status == "completed"
         assert answer.asr_transcript == answer.transcript
-        assert answer.analysis_report.engine_version == "rules-v2-dev30-syn18"
+        assert (
+            answer.analysis_report.engine_version
+            == "rules-v2.1-dev30-syn18-resp-sync"
+        )
         assert answer.analysis_report.report_json["scores"]["total"] > 0
+
+
+def test_personal_responsibility_uses_the_same_cues_in_both_sections() -> None:
+    question = get_question("dev_project_01")
+    assert question is not None
+    transcript = "我在团队中独立负责单独业务模块的完整开发工作。"
+    metrics = calculate_metrics(
+        transcript,
+        [{"start_ms": 0, "end_ms": 10000, "text": ""}],
+        10.0,
+    )
+
+    report = build_analysis_report(question, transcript, metrics)
+    keyword_item = next(
+        item
+        for item in report["keyword_coverage"]["items"]
+        if item["point"] == "个人职责"
+    )
+    evidence_item = next(
+        item
+        for item in report["evidence_analysis"]["dimensions"]
+        if item["key"] == "responsibility"
+    )
+
+    assert keyword_item["hit"] is True
+    assert evidence_item["present"] is True
+    assert "独立负责" in keyword_item["matched_cues"]
+    assert keyword_item["evidence"] == evidence_item["evidence"] == transcript[:-1]

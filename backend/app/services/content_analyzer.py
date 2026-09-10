@@ -62,6 +62,9 @@ def _point_cues(point: str, rules: dict[str, Any]) -> list[str]:
     for group_name, group_cues in rules["point_cue_groups"].items():
         if group_name in point:
             cues.extend(group_cues)
+    if any(name in point for name in ("个人职责", "个人责任", "个人任务")):
+        # 题目要点和事实证据共用同一份职责词表，避免一侧漏报。
+        cues.extend(rules["evidence_cues"]["responsibility"])
     return list(dict.fromkeys(cues))
 
 
