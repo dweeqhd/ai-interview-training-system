@@ -1,4 +1,5 @@
 import json
+import math
 import subprocess
 from pathlib import Path
 
@@ -19,9 +20,44 @@ def _require_tool(path: Path, name: str) -> None:
         raise AudioProcessingError(f"缺少{name}，请先运行阶段 3 环境配置")
 
 
+def _finite_float(value: object) -> float | None:
+    try:
+        number = float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _duration_from_packets(payload: object) -> float | None:
+    if not isinstance(payload, dict):
+        return None
+    packets = payload.get("packets")
+    if not isinstance(packets, list):
+        return None
+
+    starts: list[float] = []
+    ends: list[float] = []
+    for packet in packets:
+        if not isinstance(packet, dict):
+            continue
+        timestamp = _finite_float(packet.get("pts_time"))
+        if timestamp is None:
+            timestamp = _finite_float(packet.get("dts_time"))
+        if timestamp is None:
+            continue
+        packet_duration = _finite_float(packet.get("duration_time")) or 0.0
+        starts.append(timestamp)
+        ends.append(timestamp + max(packet_duration, 0.0))
+
+    if not starts:
+        return None
+    duration = max(ends) - min(starts)
+    return duration if duration > 0 else None
+
+
 def probe_audio_duration(audio_path: Path) -> float:
     _require_tool(FFPROBE_PATH, "FFprobe")
-    command = [
+    format_command = [
         str(FFPROBE_PATH),
         "-v",
         "error",
@@ -33,16 +69,45 @@ def probe_audio_duration(audio_path: Path) -> float:
     ]
     try:
         result = subprocess.run(
-            command,
+            format_command,
             capture_output=True,
             text=True,
             encoding="utf-8",
             timeout=30,
             check=True,
         )
-        duration = float(json.loads(result.stdout)["format"]["duration"])
-    except (subprocess.SubprocessError, KeyError, ValueError, json.JSONDecodeError) as exc:
+        format_payload = json.loads(result.stdout)
+        duration = _finite_float(format_payload.get("format", {}).get("duration"))
+
+        # MediaRecorder 生成的 WebM 可以正常播放，但常不写入容器级总时长。
+        # 此时用首尾音频包的时间戳计算实际时长。
+        if duration is None or duration <= 0:
+            packet_command = [
+                str(FFPROBE_PATH),
+                "-v",
+                "error",
+                "-select_streams",
+                "a:0",
+                "-show_entries",
+                "packet=pts_time,dts_time,duration_time",
+                "-of",
+                "json",
+                str(audio_path),
+            ]
+            packet_result = subprocess.run(
+                packet_command,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                timeout=30,
+                check=True,
+            )
+            duration = _duration_from_packets(json.loads(packet_result.stdout))
+    except (subprocess.SubprocessError, AttributeError, json.JSONDecodeError) as exc:
         raise AudioProcessingError("无法读取音频，请确认文件未损坏") from exc
+
+    if duration is None:
+        raise AudioProcessingError("无法读取音频，请确认文件未损坏")
 
     if duration < MIN_AUDIO_DURATION_SEC:
         raise AudioProcessingError(
